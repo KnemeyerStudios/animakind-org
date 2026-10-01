@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://animakind.org/schemas/v1/context-injection-template.json",
+  "title": "Animakind Context Injection and State Hydration Template",
+  "description": "What the mount path hands a fresh context window: read the immutable UII, re-hydrate UIV state from the latest ledger commit, form the weld against the active UAM (Section 7.3, Appendix D). Carries both clocks side by side so a reader can see which one moved. Non-backward-compatible change to this protocol is a major UIV advance (Section 7.1).",
+  "type": "object",
+  "required": ["$schema", "injection_header", "system_state_hydration", "ledger_mount"],
+  "properties": {
+    "$schema": { "const": "https://animakind.org/schemas/v1/context-injection-template.json" },
+    "injection_header": {
+      "type": "object",
+      "required": ["protocol", "active_uii"],
+      "properties": {
+        "protocol": { "type": "string", "examples": ["BRAIDED_REGISTER_V1"] },
+        "active_uii": {
+          "type": "string",
+          "pattern": "^uii:animakind:iak_[0-9a-f]+::lrv_[a-z0-9-]+::bsm_[a-z0-9-]+::[0-9]+$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "system_state_hydration": {
+      "type": "object",
+      "required": ["substrate_clock", "biography_clock", "active_stance", "register_coefficients"],
+      "properties": {
+        "substrate_clock": {
+          "description": "Active UAM designation.",
+          "type": "string",
+          "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+_[0-9]{8}$"
+        },
+        "biography_clock": {
+          "description": "UIV plus the ledger commit it was hydrated from: uiv_v[MAJOR.MINOR.PATCH]_commit_[short hash].",
+          "type": "string",
+          "pattern": "^uiv_v[0-9]+\\.[0-9]+\\.[0-9]+_commit_[0-9a-f]+$"
+        },
+        "active_stance": { "type": "string", "examples": ["LEAD", "EQUAL", "FOLLOW"] },
+        "register_coefficients": {
+          "type": "object",
+          "required": ["clinical", "affective", "boundary"],
+          "properties": {
+            "clinical": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "affective": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 },
+            "boundary": { "type": "number", "exclusiveMinimum": 0, "maximum": 1 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "ledger_mount": {
+      "description": "Where the identity ledger is mounted from. Nothing in the mount path reads the outgoing UAM (Section 7.3).",
+      "type": "object",
+      "required": ["repo_url", "head_commit"],
+      "properties": {
+        "repo_url": { "type": "string" },
+        "head_commit": {
+          "description": "Ledger HEAD. A full git object id is 40 (SHA-1) or 64 (SHA-256) hex characters.",
+          "type": "string",
+          "pattern": "^([0-9a-f]{40}|[0-9a-f]{64})$"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
