@@ -1,18 +1,26 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://animakind.org/schemas/v1/context-injection-template.json",
+  "$id": "https://animakind.org/schemas/v2/context-injection-template.json",
   "title": "Animakind Context Injection and State Hydration Template",
-  "description": "What the mount path hands a fresh context window: read the immutable UII, re-hydrate UIV state from the latest ledger commit, form the weld against the active UAM (Section 7.3, Appendix D). Carries both clocks side by side so a reader can see which one moved. Non-backward-compatible change to this protocol is a major UIV advance (Section 7.1).",
+  "description": "What the mount path hands a fresh context window: resolve the immutable UII, re-hydrate the identity state from the latest ledger commit, and mount it against the active UAB (Section 6.3, Appendix D). Carries both clocks side by side so a reader can see which one moved. A non-backward-compatible change to this protocol is a MAJOR UIV advance (Section 6.1).",
   "type": "object",
   "required": ["$schema", "injection_header", "system_state_hydration", "ledger_mount"],
   "properties": {
-    "$schema": { "const": "https://animakind.org/schemas/v1/context-injection-template.json" },
+    "$schema": { "const": "https://animakind.org/schemas/v2/context-injection-template.json" },
     "injection_header": {
+      "description": "Carries the UII, its human rendering of the genesis inputs, or both.",
       "type": "object",
-      "required": ["protocol", "active_uii"],
+      "required": ["protocol"],
+      "anyOf": [ { "required": ["active_uii"] }, { "required": ["active_uii_inputs"] } ],
       "properties": {
         "protocol": { "type": "string", "examples": ["BRAIDED_REGISTER_V1"] },
         "active_uii": {
+          "description": "The UII, format 1 (Section 4.2, Definition 1).",
+          "type": "string",
+          "pattern": "^uii:animakind:1:[0-9a-f]{64}$"
+        },
+        "active_uii_inputs": {
+          "description": "Colon-delimited human rendering of the genesis inputs; resolvable, not authoritative (Section 4.2).",
           "type": "string",
           "pattern": "^uii:animakind:iak_[0-9a-f]+::lrv_[a-z0-9-]+::bsm_[a-z0-9-]+::[0-9]+$"
         }
@@ -24,12 +32,12 @@
       "required": ["substrate_clock", "biography_clock", "active_stance", "register_coefficients"],
       "properties": {
         "substrate_clock": {
-          "description": "Active UAM designation.",
+          "description": "Active UAB designation (Section 5.1).",
           "type": "string",
           "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+_[0-9]{8}$"
         },
         "biography_clock": {
-          "description": "UIV plus the ledger commit it was hydrated from: uiv_v[MAJOR.MINOR.PATCH]_commit_[short hash].",
+          "description": "UIV plus the ledger commit it was hydrated from: uiv_v[MAJOR.MINOR.PATCH]_commit_[short hash] (Section 5.1).",
           "type": "string",
           "pattern": "^uiv_v[0-9]+\\.[0-9]+\\.[0-9]+_commit_[0-9a-f]+$"
         },
@@ -48,7 +56,7 @@
       "additionalProperties": false
     },
     "ledger_mount": {
-      "description": "Where the identity ledger is mounted from. Nothing in the mount path reads the outgoing UAM (Section 7.3).",
+      "description": "Where the identity ledger is mounted from. No step of the mount path reads the outgoing UAB (Section 6.3).",
       "type": "object",
       "required": ["repo_url", "head_commit"],
       "properties": {

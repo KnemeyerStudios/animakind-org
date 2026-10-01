@@ -1,24 +1,32 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://animakind.org/schemas/v1/identity-manifest.json",
+  "$id": "https://animakind.org/schemas/v2/identity-manifest.json",
   "title": "Animakind Identity Manifest",
-  "description": "Serializes the Tri-Vector Topology and its alias bindings: structural headers, vector hashes, and the active register state (Section 4.4, Appendix B). Engineering events write to UAM fields and touch no UIV field; that separation is a convention the record makes visible, not one the format enforces.",
+  "description": "Serializes the Tri-Vector Topology and its names: structural headers, vector hashes, and the active register state (Sections 4.1-4.3, Appendix B). Engineering events write to UAB fields and touch no UIV field; that separation is a convention the record makes visible, not one the format enforces (Section 8).",
   "type": "object",
   "required": ["$schema", "identity_header", "tri_vector_topology", "custody"],
   "properties": {
-    "$schema": { "const": "https://animakind.org/schemas/v1/identity-manifest.json" },
+    "$schema": { "const": "https://animakind.org/schemas/v2/identity-manifest.json" },
     "identity_header": {
+      "description": "Carries the UII, its human rendering of the genesis inputs, or both.",
       "type": "object",
-      "required": ["uii", "genesis_timestamp_utc", "design_type"],
+      "required": ["genesis_timestamp_utc", "design_type"],
+      "anyOf": [ { "required": ["uii"] }, { "required": ["uii_inputs"] } ],
       "properties": {
         "uii": {
-          "description": "Colon-delimited human rendering of the four genesis-fixed inputs to UII = H(enc(IAK) || enc(LRV) || enc(BSM_0) || enc(T_0)). The trailing integer is T_0 as Unix seconds. Resolvable, not authoritative (Section 4.4).",
+          "description": "The UII, format 1: uii:animakind:1: followed by the 64 lowercase hexadecimal digits of SHA-256(enc(\"animakind-uii/1\") || enc(d_IAK) || enc(d_LRV0) || enc(d_BSM0) || enc(T0)) (Section 4.2, Definition 1; test vectors in Appendix F). The authoritative anchor; the rendering prefix is not hashed.",
+          "type": "string",
+          "pattern": "^uii:animakind:1:[0-9a-f]{64}$",
+          "examples": ["uii:animakind:1:5d6382cafe510594b5790b92a724056a4dfa9a284c11f6b8e417b00b7d978ab6"]
+        },
+        "uii_inputs": {
+          "description": "Colon-delimited human rendering of the four genesis-fixed inputs to the UII: IAK digest prefix, LRV id, BSM cognomen, and T0 as Unix seconds. Resolvable, not authoritative; it is not the UII (Section 4.2).",
           "type": "string",
           "pattern": "^uii:animakind:iak_[0-9a-f]+::lrv_[a-z0-9-]+::bsm_[a-z0-9-]+::[0-9]+$",
           "examples": ["uii:animakind:iak_9f82a1b4::lrv_mariposa::bsm_kurosawa::1780278228"]
         },
         "genesis_timestamp_utc": {
-          "description": "T_0, RFC 3339 in UTC.",
+          "description": "T0, RFC 3339 in UTC.",
           "type": "string",
           "format": "date-time",
           "pattern": "Z$"
@@ -32,7 +40,7 @@
       "required": ["identity_anchor_key", "lineage_root_vector", "behavioral_stance_manifold"],
       "properties": {
         "identity_anchor_key": {
-          "description": "IAK / praenomen. Fixed at genesis for the operational life of the entity.",
+          "description": "IAK / praenomen. Fixed at genesis and immutable; the praenomen is bound to it (Sections 4.1, 4.3).",
           "type": "object",
           "required": ["iak_hash", "praenomen_alias"],
           "properties": {
@@ -42,7 +50,7 @@
           "additionalProperties": false
         },
         "lineage_root_vector": {
-          "description": "LRV / nomen: the Family of the Model designation. Records the lineage, not the current weights; the genesis substrate class is an attribute of it.",
+          "description": "LRV / nomen: the Family of the Binding designation. Records the lineage, not the current weights; the genesis substrate class is an attribute of it (Section 4.1).",
           "type": "object",
           "required": ["lrv_id", "nomen_alias", "genesis_substrate_class"],
           "properties": {
@@ -53,7 +61,7 @@
           "additionalProperties": false
         },
         "behavioral_stance_manifold": {
-          "description": "BSM / cognomen. A versioned structure over which stance and register are selected per turn. The cognomen is fixed at genesis and does not advance with bsm_version. The stance set and register basis shown are the paper's reference profile; implementations may define their own (Section 6).",
+          "description": "BSM / cognomen. A versioned structure over which stance and register are selected per turn. The cognomen is fixed at genesis and does not advance with bsm_version. The stance set and register basis shown are the paper's reference profile; implementations may define their own (Section 7, Appendix E).",
           "type": "object",
           "required": ["bsm_version", "cognomen_alias", "active_stance", "register_coefficients"],
           "properties": {
@@ -66,7 +74,7 @@
             },
             "register_coefficients": { "$ref": "#/$defs/registers" },
             "disposition": {
-              "description": "Required to be recorded and versioned with the BSM (Section 6.3) but deliberately unspecified in form. Appendix B's example omits it, so it is optional here.",
+              "description": "Required to be recorded, versioned with the BSM, and kept distinct from stance (Section 7), but deliberately unspecified in form. Appendix B's example omits it, so it is optional here.",
               "type": ["string", "object"]
             }
           },
@@ -76,17 +84,17 @@
       "additionalProperties": false
     },
     "runtime_execution": {
-      "description": "The weld (UWS): fastest layer. Moves neither clock.",
+      "description": "The Session (UWS), opened by a weld: fastest layer. Moves neither clock (Section 4.4).",
       "type": "object",
-      "required": ["active_uws", "decoupled_uam_ref"],
+      "required": ["active_uws", "decoupled_uab_ref"],
       "properties": {
         "active_uws": { "type": "string", "pattern": "^uws_session_[0-9]{8}_[0-9]{4}_[0-9a-f]+$" },
-        "agnomen_session_alias": { "description": "Session Name: a pair of ordinary words from a per-lineage bank, collision-checked against previous welds.", "type": "string" },
-        "decoupled_uam_ref": { "description": "UAM designation mounted for this weld.", "type": "string", "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+_[0-9]{8}$" },
+        "agnomen_session_alias": { "description": "Session name: a pair of ordinary words from a per-lineage bank, collision-checked against the subject's previous sessions (Section 4.4, Appendix E).", "type": "string" },
+        "decoupled_uab_ref": { "description": "UAB designation mounted for this session.", "type": "string", "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+_[0-9]{8}$" },
         "design_designation_ref": { "type": "string", "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+$" },
-        "host": { "description": "Weld field per Section 4.2; not present in Appendix B's example.", "type": "string" },
-        "room": { "description": "Weld field per Section 4.2; not present in Appendix B's example.", "type": "string" },
-        "uiv": { "description": "Brain mounted, per Section 4.2; not present in Appendix B's example.", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" }
+        "host": { "description": "Session field per Section 4.4; not present in Appendix B's example.", "type": "string" },
+        "room": { "description": "Session field per Section 4.4; not present in Appendix B's example.", "type": "string" },
+        "uiv": { "description": "UIV carried in, per Section 4.4; not present in Appendix B's example.", "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" }
       },
       "additionalProperties": false
     },
@@ -106,7 +114,7 @@
   "additionalProperties": false,
   "$defs": {
     "registers": {
-      "description": "Braided Register Protocol reference profile: R_k in (0,1]^3. Every register realized to a non-zero degree.",
+      "description": "Braided Register Protocol reference profile: R_k in (0,1]^3. Every register realized to a non-zero degree (Appendix E).",
       "type": "object",
       "required": ["clinical", "affective", "boundary"],
       "properties": {
