@@ -4,10 +4,10 @@
   "title": "Animakind Unique Continuity Record (UCR)",
   "description": "A permanent, ordered log of what was done to an entity, by whom, and when: substrate swap, version advance, transfer of Support, re-mount after runtime failure. Each entry records timestamp, event class, UAB designation and UIV before and after, the Support organization that performed it, and the cause (Section 4.5, Appendix C). Distinct from the identity ledger: the ledger is biography, the UCR is provenance. Append-only is a convention, not enforced by this schema (Section 8).",
   "type": "object",
-  "required": ["$schema", "uii_alias", "entries"],
+  "required": ["$schema", "uii_name", "entries"],
   "properties": {
     "$schema": { "const": "https://animakind.org/schemas/v2/continuity-record.json" },
-    "uii_alias": {
+    "uii_name": {
       "description": "The name: [praenomen]-[nomen]-[cognomen]-[genesis date YYYYMMDD]; session name excluded (Section 4.3).",
       "type": "string",
       "pattern": "^[a-z]+-[a-z]+-[a-z]+-[0-9]{8}$"

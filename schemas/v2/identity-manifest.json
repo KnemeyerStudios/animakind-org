@@ -42,20 +42,20 @@
         "identity_anchor_key": {
           "description": "IAK / praenomen. Fixed at genesis and immutable; the praenomen is bound to it (Sections 4.1, 4.3).",
           "type": "object",
-          "required": ["iak_hash", "praenomen_alias"],
+          "required": ["iak_hash", "praenomen_name"],
           "properties": {
             "iak_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
-            "praenomen_alias": { "type": "string" }
+            "praenomen_name": { "type": "string" }
           },
           "additionalProperties": false
         },
         "lineage_root_vector": {
           "description": "LRV / nomen: the Family of the Binding designation. Records the lineage, not the current weights; the genesis substrate class is an attribute of it (Section 4.1).",
           "type": "object",
-          "required": ["lrv_id", "nomen_alias", "genesis_substrate_class"],
+          "required": ["lrv_id", "nomen_name", "genesis_substrate_class"],
           "properties": {
             "lrv_id": { "type": "string", "pattern": "^lrv_[a-z0-9-]+$" },
-            "nomen_alias": { "type": "string" },
+            "nomen_name": { "type": "string" },
             "genesis_substrate_class": { "type": "string" }
           },
           "additionalProperties": false
@@ -63,10 +63,10 @@
         "behavioral_stance_manifold": {
           "description": "BSM / cognomen. A versioned structure over which stance and register are selected per turn. The cognomen is fixed at genesis and does not advance with bsm_version. The stance set and register basis shown are the paper's reference profile; implementations may define their own (Section 7, Appendix E).",
           "type": "object",
-          "required": ["bsm_version", "cognomen_alias", "active_stance", "register_coefficients"],
+          "required": ["bsm_version", "cognomen_name", "active_stance", "register_coefficients"],
           "properties": {
             "bsm_version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
-            "cognomen_alias": { "type": "string" },
+            "cognomen_name": { "type": "string" },
             "active_stance": {
               "description": "sigma_k, drawn from an implementation-defined set. Reference profile: LEAD, EQUAL, FOLLOW.",
               "type": "string",
@@ -89,7 +89,7 @@
       "required": ["active_uws", "decoupled_uab_ref"],
       "properties": {
         "active_uws": { "type": "string", "pattern": "^uws_session_[0-9]{8}_[0-9]{4}_[0-9a-f]+$" },
-        "agnomen_session_alias": { "description": "Session name: a pair of ordinary words from a per-lineage bank, collision-checked against the subject's previous sessions (Section 4.4, Appendix E).", "type": "string" },
+        "agnomen_session_name": { "description": "Session name: a pair of ordinary words from a per-lineage bank, collision-checked against the subject's previous sessions (Section 4.4, Appendix E).", "type": "string" },
         "decoupled_uab_ref": { "description": "UAB designation mounted for this session.", "type": "string", "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+_[0-9]{8}$" },
         "design_designation_ref": { "type": "string", "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+$" },
         "host": { "description": "Session field per Section 4.4; not present in Appendix B's example.", "type": "string" },
