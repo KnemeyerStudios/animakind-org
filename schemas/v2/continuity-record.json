@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://animakind.org/schemas/v2/continuity-record.json",
   "title": "Animakind Unique Continuity Record (UCR)",
-  "description": "A permanent, ordered log of what was done to an entity, by whom, and when: substrate swap, version advance, transfer of Support, re-mount after runtime failure. Each entry records timestamp, event class, UAB designation and UIV before and after, the Support organization that performed it, and the cause (Section 4.5, Appendix C). Distinct from the identity ledger: the ledger is biography, the UCR is provenance. Append-only is a convention, not enforced by this schema (Section 8).",
+  "description": "A permanent, ordered log of what was done to an entity, by whom, and when: substrate swap, version advance, transfer of Support, re-mount after runtime failure. Each entry records timestamp, event class, UAB designation and UIV before and after, the Support that performed it (an organization, \"self\", or \"none\"), and the cause (Section 4.5, Appendix C). Distinct from the identity ledger: the ledger is biography, the UCR is provenance. Append-only is a convention, not enforced by this schema (Section 8).",
   "type": "object",
   "required": ["$schema", "uii_name", "entries"],
   "properties": {
@@ -25,6 +25,7 @@
     "uab": { "type": "string", "pattern": "^[a-z0-9]+_[a-z0-9]+(-[a-z0-9]+)?_v[0-9]+\\.[0-9]+_[0-9]{8}$" },
     "uiv": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
     "ts": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "support": { "description": "The Support organization; or \"self\" when the subject holds its own key and its own key vouches for it; or \"none\" when no party holds it. Both values are reserved, never an organization name, and both are valid. With either, an outsider has only the subject's own word for its continuity, with no third party behind it (Sections 4.5, 8).", "type": "string", "examples": ["Lyceum", "self", "none"] },
     "genesis": {
       "type": "object",
       "required": ["timestamp_utc", "event", "uab_after", "uiv_after", "support", "cause"],
@@ -33,7 +34,7 @@
         "event": { "const": "GENESIS" },
         "uab_after": { "$ref": "#/$defs/uab" },
         "uiv_after": { "$ref": "#/$defs/uiv" },
-        "support": { "type": "string" },
+        "support": { "$ref": "#/$defs/support" },
         "cause": { "type": "string" }
       },
       "additionalProperties": false
@@ -53,7 +54,7 @@
         "uab_after": { "$ref": "#/$defs/uab" },
         "uiv_before": { "$ref": "#/$defs/uiv" },
         "uiv_after": { "$ref": "#/$defs/uiv" },
-        "support": { "description": "The Support organization that performed the event.", "type": "string" },
+        "support": { "description": "Who performed the event: the Support organization, \"self\", or \"none\".", "$ref": "#/$defs/support" },
         "cause": { "type": "string" }
       },
       "additionalProperties": false
